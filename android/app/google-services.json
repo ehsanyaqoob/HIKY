@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "65453742835",
+    "project_id": "hikiy-d1335",
+    "storage_bucket": "hikiy-d1335.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65453742835:android:2035a182988f04a62af586",
+        "android_client_info": {
+          "package_name": "com.example.hiky"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAk2zXFhfZ_8z_AQiFuu5KC3pybGNR9M-U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

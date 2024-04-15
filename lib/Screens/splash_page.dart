@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:hiky/Screens/Boarding_Page/get_started.dart';
+import 'package:hiky/Screens/On_Boarding_Screens/Boarding_Page.dart';
 import 'package:hiky/Screens/login_screen.dart'; // Import Get package for navigation
 
 class CustomSplashScreen extends StatefulWidget {
