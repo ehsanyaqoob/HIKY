@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,6 +6,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hiky/Screens/Forgot_Psw/forgot_password.dart';
+import 'package:hiky/Screens/home_page.dart';
 import 'package:hiky/Screens/sign_up_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,6 +19,34 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+
+  bool _isObscure = true; // State to toggle password visibility
+
+  // Function to perform login
+  Future<void> loginUser() async {
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+      // Navigate to home screen or next screen if login is successful
+      Get.off(HomePage());
+    } on FirebaseAuthException catch (e) {
+      _showLoginSnackbar();
+    }
+  }
+
+  void _showLoginSnackbar() {
+    Get.snackbar(
+      'Login Failed',
+      'Please try again with correct info.',
+      backgroundColor: Colors.teal,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: Duration(seconds: 3),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +73,9 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: 10.h),
               TextFormField(
+                onTapOutside: (value) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
@@ -60,9 +93,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: 15.h),
               TextFormField(
+                onTapOutside: (value) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
                 controller: passwordController,
                 keyboardType: TextInputType.visiblePassword,
-                obscureText: true,
+                obscureText: _isObscure,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(
@@ -71,7 +107,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.grey,
                     ),
                   ),
-                  prefixIcon: Icon(Icons.password, color: Colors.grey[700]),
+                  prefixIcon: Icon(Icons.lock, color: Colors.grey[700]),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                        _isObscure ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () {
+                      setState(() {
+                        _isObscure = !_isObscure;
+                      });
+                    },
+                  ),
                   fillColor: Colors.white,
                   filled: true,
                 ),
@@ -100,6 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ElevatedButton(
                 onPressed: () {
                   // Login Query
+                  loginUser();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
