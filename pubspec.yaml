@@ -30,6 +30,7 @@ dependencies:
   lottie: ^3.1.0
   firebase_auth: ^4.19.1
   firebase_core: ^2.29.0
+  country_code_picker: ^3.0.0
   # 
 
 dev_dependencies:

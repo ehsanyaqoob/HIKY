@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get/get.dart'; // Make sure to import Get correctly
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hiky/Screens/home_page.dart';
 
 class OTPVerificationPage extends StatefulWidget {
+  final String verificationId;
+
+  const OTPVerificationPage({Key? key, required this.verificationId}) : super(key: key);
+
   @override
   State<OTPVerificationPage> createState() => _OTPVerificationPageState();
 }
 
 class _OTPVerificationPageState extends State<OTPVerificationPage> {
-  TextEditingController _controller1 = TextEditingController();
-  TextEditingController _controller2 = TextEditingController();
-  TextEditingController _controller3 = TextEditingController();
-  TextEditingController _controller4 = TextEditingController();
-  TextEditingController _controller5 = TextEditingController();
-  TextEditingController _controller6 = TextEditingController();
-  FocusNode _focusNode1 = FocusNode();
-  FocusNode _focusNode2 = FocusNode();
-  FocusNode _focusNode3 = FocusNode();
-  FocusNode _focusNode4 = FocusNode();
-  FocusNode _focusNode5 = FocusNode();
-  FocusNode _focusNode6 = FocusNode();
+  final TextEditingController _controller1 = TextEditingController();
+  final TextEditingController _controller2 = TextEditingController();
+  final TextEditingController _controller3 = TextEditingController();
+  final TextEditingController _controller4 = TextEditingController();
+  final TextEditingController _controller5 = TextEditingController();
+  final TextEditingController _controller6 = TextEditingController();
+  final FocusNode _focusNode1 = FocusNode();
+  final FocusNode _focusNode2 = FocusNode();
+  final FocusNode _focusNode3 = FocusNode();
+  final FocusNode _focusNode4 = FocusNode();
+  final FocusNode _focusNode5 = FocusNode();
+  final FocusNode _focusNode6 = FocusNode();
 
   @override
   void dispose() {
@@ -41,13 +44,23 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
     super.dispose();
   }
 
-  // Helper method to handle focus navigation between OTP input fields
-  void _onTextChanged(
-      String value, FocusNode currentNode, FocusNode previousNode) {
-    if (value.isNotEmpty) {
-      currentNode.requestFocus();
+  // Method to handle OTP verification
+  void verifyOTP() {
+    String enteredOTP = _controller1.text + _controller2.text + _controller3.text +
+                        _controller4.text + _controller5.text + _controller6.text;
+
+    // Placeholder for OTP verification logic
+    if (enteredOTP.length == 6) {
+      Get.to(() => HomePage());
     } else {
-      previousNode.requestFocus();
+      _showSnackbar("Invalid OTP", "Please check the code and try again.");
+    }
+  }
+
+  // Method to focus on next or previous text field
+  void _onTextChanged(String value, FocusNode currentNode, FocusNode nextNode) {
+    if (value.isNotEmpty) {
+      FocusScope.of(context).requestFocus(nextNode);
     }
   }
 
@@ -57,23 +70,12 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_rounded,
-            color: Colors.grey[700],
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.grey[700]),
+          onPressed: () => Navigator.pop(context),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'Go Back',
-          style: GoogleFonts.ptSans(
-            fontSize: 20.sp,
-            color: Colors.black,
-          ),
-        ),
+        title: Text('Go Back', style: GoogleFonts.ptSans(fontSize: 20.sp, color: Colors.black)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(35.0),
@@ -82,229 +84,59 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 50.h),
-            Text(
-              'Check Your Phone',
-              style: GoogleFonts.ptSans(
-                fontSize: 30.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.justify,
-            ),
+            Text('Check Your Phone', style: GoogleFonts.ptSans(fontSize: 30.sp, fontWeight: FontWeight.w500, color: Colors.black), textAlign: TextAlign.center),
             SizedBox(height: 10.h),
-            Text(
-              "We've sent the code to your phone number",
-              style: GoogleFonts.ptSans(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              "+923126514491",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text("We've sent the code to your phone number", style: GoogleFonts.ptSans(fontSize: 16.sp, fontWeight: FontWeight.w500, color: Colors.black), textAlign: TextAlign.center),
+            Text("+923126514491", style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
             SizedBox(height: 32.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
+              children: List.generate(6, (index) {
+                return Expanded(
                   child: TextFormField(
-                    controller: _controller1,
-                    focusNode: _focusNode1,
+                    controller: [ _controller1, _controller2, _controller3, _controller4, _controller5, _controller6][index],
+                    focusNode: [ _focusNode1, _focusNode2, _focusNode3, _focusNode4, _focusNode5, _focusNode6][index],
                     keyboardType: TextInputType.number,
                     maxLength: 1,
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(
                       hintText: '-',
                       counterText: '',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                       contentPadding: EdgeInsets.all(14),
                       isDense: true,
                     ),
                     onChanged: (value) {
-                      _onTextChanged(value, _focusNode2, _focusNode1);
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    controller: _controller2,
-                    focusNode: _focusNode2,
-                    keyboardType: TextInputType.number,
-                    maxLength: 1,
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      hintText: '-',
-                      counterText: '',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      contentPadding: EdgeInsets.all(14),
-                      isDense: true,
-                    ),
-                    onChanged: (value) {
-                      _onTextChanged(value, _focusNode3, _focusNode1);
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    controller: _controller3,
-                    focusNode: _focusNode3,
-                    keyboardType: TextInputType.number,
-                    maxLength: 1,
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      hintText: '-',
-                      counterText: '',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      contentPadding: EdgeInsets.all(14),
-                      isDense: true,
-                    ),
-                    onChanged: (value) {
-                      _onTextChanged(value, _focusNode4, _focusNode2);
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    controller: _controller4,
-                    focusNode: _focusNode4,
-                    keyboardType: TextInputType.number,
-                    maxLength: 1,
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      hintText: '-',
-                      counterText: '',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      contentPadding: EdgeInsets.all(14),
-                      isDense: true,
-                    ),
-                    onChanged: (value) {
-                      _onTextChanged(value, _focusNode5, _focusNode3);
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    controller: _controller5,
-                    focusNode: _focusNode5,
-                    keyboardType: TextInputType.number,
-                    maxLength: 1,
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      hintText: '-',
-                      counterText: '',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      contentPadding: EdgeInsets.all(14),
-                      isDense: true,
-                    ),
-                    onChanged: (value) {
-                      _onTextChanged(value, _focusNode6, _focusNode4);
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    controller: _controller6,
-                    focusNode: _focusNode6,
-                    keyboardType: TextInputType.number,
-                    maxLength: 1,
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      hintText: '-',
-                      counterText: '',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      contentPadding: EdgeInsets.all(14),
-                      isDense: true,
-                    ),
-                    onChanged: (value) {
-                      if (value.isEmpty) {
-                        _onTextChanged(value, _focusNode5, _focusNode5);
+                      if (value.isNotEmpty && index < 5) {
+                        FocusScope.of(context).requestFocus([ _focusNode2, _focusNode3, _focusNode4, _focusNode5, _focusNode6][index]);
                       }
                     },
                   ),
-                ),
-              ],
+                );
+              }),
             ),
             SizedBox(height: 20.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Code expires in 3:00',
-                  style: GoogleFonts.ptSans(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+            Text('Code expires in 3:00', style: GoogleFonts.ptSans(fontWeight: FontWeight.bold)),
             SizedBox(height: 40.h),
             ElevatedButton(
-              onPressed: () {
-                // Sign up Query
-                // go to otp page
-                Get.to(HomePage());
-              },
+              onPressed: verifyOTP,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 padding: EdgeInsets.symmetric(horizontal: 100, vertical: 12),
               ),
-              child: Text(
-                'Verify',
-                style: GoogleFonts.ptSans(
-                  color: Colors.black,
-                  fontSize: 20.sp,
-                ),
-              ),
+              child: Text('Verify', style: GoogleFonts.ptSans(color: Colors.black, fontSize: 20.sp)),
             ),
             SizedBox(height: 10.h),
             ElevatedButton(
-              onPressed: () {
-                // it send otp agian and starts timer gain also send snackbar
-                _showSnackbar();
-              },
+              onPressed: () => _showSnackbar("Resend OTP", "OTP has been resent successfully."),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white, // Set background color to white
-                shadowColor: Colors.grey, // Set text color to grey
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  side: BorderSide(
-                      color: Colors.grey), // Set border color to grey
-                ),
+                backgroundColor: Colors.white,
+                shadowColor: Colors.grey,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30), side: BorderSide(color: Colors.grey)),
                 padding: EdgeInsets.symmetric(horizontal: 100, vertical: 12),
               ),
-              child: Text(
-                'Resend',
-                style: GoogleFonts.ptSans(
-                  color: Colors.black,
-                  fontSize: 20.sp,
-                ),
-              ),
+              child: Text('Resend', style: GoogleFonts.ptSans(color: Colors.black, fontSize: 20.sp)),
             )
           ],
         ),
@@ -312,13 +144,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
     );
   }
 
-  void _showSnackbar() {
-    Get.snackbar(
-      'Resend Success',
-      'OTP has been resent successfully.',
-      backgroundColor: Colors.teal, // Customize background color
-      colorText: Colors.white, // Customize text color
-    );
+  void _showSnackbar(String title, String message) {
+    Get.snackbar(title, message, backgroundColor: Colors.teal, colorText: Colors.white);
   }
 }
-    

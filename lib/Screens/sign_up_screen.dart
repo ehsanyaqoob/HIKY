@@ -1,10 +1,10 @@
+import 'package:country_code_picker/country_code_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'OTP_verification/otp_verification.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -18,6 +18,54 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+
+  final String countryCode = "+1";
+  Future<void> signUpUser() async {
+    try {
+      String fullPhoneNumber = countryCode + phoneController.text;
+
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: fullPhoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // This callback gets called when the verification is done automatically
+          _showSnackbar("Phone number automatically verified",
+              backgroundColor: Colors.teal[400]);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          if (e.code == 'invalid-phone-number') {
+            _showSnackbar("The provided phone number is not valid.");
+          } else {
+            _showSnackbar("Failed to verify phone number: ${e.message}");
+          }
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          _showSnackbar("Verification code sent to your phone",
+              backgroundColor: Colors.teal[400]);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    OTPVerificationPage(verificationId: verificationId)),
+          );
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          _showSnackbar("Verification code retrieval timeout");
+        },
+      );
+    } catch (e) {
+      _showSnackbar("Failed to sign up user: $e");
+    }
+  }
+
+  void _showSnackbar(String message, {Color? backgroundColor}) {
+    Get.snackbar(
+      "Notification",
+      message,
+      backgroundColor: backgroundColor ?? Colors.teal[400],
+      snackPosition: SnackPosition.TOP,
+      colorText: Colors.white,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +84,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         elevation: 0,
         title: Text(
           'Signup',
-          style: TextStyle(
+          style: GoogleFonts.ptSans(
             color: Colors.black,
           ),
         ),
@@ -66,6 +114,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               SizedBox(height: 10.h),
               TextFormField(
+                onTapOutside: (value) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
                 controller: nameController,
                 keyboardType: TextInputType.name,
                 decoration: InputDecoration(
@@ -83,6 +134,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               SizedBox(height: 15.h),
               TextFormField(
+                onTapOutside: (value) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
@@ -99,28 +153,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               SizedBox(height: 15.h),
-              TextFormField(
-                controller: phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Phone',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide(
-                      color: Colors.grey,
+              Row(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                        vertical: 5.0), // Add padding inside the container
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey), // Border color
+                      borderRadius:
+                          BorderRadius.circular(30), // Rounded corners
+                      color: Colors.white, // Background color
+                    ),
+                    child: CountryCodePicker(
+                      onChanged: print,
+                      initialSelection: 'US',
+                      favorite: ['+1', 'US'],
+                      showCountryOnly: false,
+                      showOnlyCountryWhenClosed: false,
+                      alignLeft: false,
                     ),
                   ),
-                  prefixIcon: Icon(Icons.phone, color: Colors.grey[700]),
-                  fillColor: Colors.white,
-                  filled: true,
-                ),
+                  Expanded(
+                    child: TextFormField(
+                      onTapOutside: (value) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
+                      controller: phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        labelText: 'Phone',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        prefixIcon: Icon(Icons.phone, color: Colors.grey[700]),
+                        fillColor: Colors.white,
+                        filled: true,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 20.h),
               ElevatedButton(
                 onPressed: () {
-                  // Sign up Query
-                  // go to otp page
-                  Get.to(OTPVerificationPage());
+                  signUpUser();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
