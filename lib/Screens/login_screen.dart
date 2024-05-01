@@ -50,156 +50,160 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 26),
-          child: Column(
-            children: [
-              Image.asset(
-                'assets/HIKY_DARK.png',
-                height: 200.h,
-                width: MediaQuery.of(context).size.width,
-              ),
-              Text(
-                'Welcome Back',
-                style: GoogleFonts.ptSans(
-                  fontSize: 40,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 26),
+            child: Column(
+              children: [
+                Image.asset(
+                  'assets/HIKY_DARK.png',
+                  height: 200.h,
+                  width: MediaQuery.of(context).size.width,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 10.h),
-              TextFormField(
-                onTapOutside: (value) {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                },
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide(
-                      color: Colors.grey,
-                    ),
-                  ),
-                  prefixIcon: Icon(Icons.email, color: Colors.grey[700]),
-                  fillColor: Colors.white,
-                  filled: true,
-                ),
-              ),
-              SizedBox(height: 15.h),
-              TextFormField(
-                onTapOutside: (value) {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                },
-                controller: passwordController,
-                keyboardType: TextInputType.visiblePassword,
-                obscureText: _isObscure,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide(
-                      color: Colors.grey,
-                    ),
-                  ),
-                  prefixIcon: Icon(Icons.lock, color: Colors.grey[700]),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                        _isObscure ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () {
-                      setState(() {
-                        _isObscure = !_isObscure;
-                      });
-                    },
-                  ),
-                  fillColor: Colors.white,
-                  filled: true,
-                ),
-              ),
-              SizedBox(height: 10.h),
-              GestureDetector(
-                onTap: () {
-                  Get.to(ForgotPassword());
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Forgot Password?",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20.h),
-              ElevatedButton(
-                onPressed: () {
-                  // Login Query
-                  loginUser();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 100, vertical: 12),
-                ),
-                child: Text(
-                  'Login',
+                Text(
+                  'Welcome Back',
                   style: GoogleFonts.ptSans(
+                    fontSize: 40,
                     color: Colors.black,
-                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 10.h),
+                TextFormField(
+                  onTapOutside: (value) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide(
+                        color: Colors.grey,
+                      ),
+                    ),
+                    prefixIcon: Icon(Icons.email, color: Colors.grey[700]),
+                    fillColor: Colors.white,
+                    filled: true,
                   ),
                 ),
-              ),
-              SizedBox(height: 10.h),
-              GestureDetector(
-                onTap: () {
-                  Get.to(SignUpScreen());
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Hey, Are you new here?',
-                      style: GoogleFonts.ptSans(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 16.sp,
-                        color: Colors.black,
+                SizedBox(height: 15.h),
+                TextFormField(
+                  onTapOutside: (value) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  controller: passwordController,
+                  keyboardType: TextInputType.visiblePassword,
+                  obscureText: _isObscure,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide(
+                        color: Colors.grey,
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(width: 6),
-                    Text(
-                      'SignUp',
-                      style: GoogleFonts.ptSans(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 20.sp,
-                        color: Colors.black,
-                      ),
-                      textAlign: TextAlign.center,
+                    prefixIcon: Icon(Icons.lock, color: Colors.grey[700]),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                          _isObscure ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () {
+                        setState(() {
+                          _isObscure = !_isObscure;
+                        });
+                      },
                     ),
-                  ],
+                    fillColor: Colors.white,
+                    filled: true,
+                  ),
                 ),
-              ),
-              SizedBox(height: 10.h),
-              // Auth methods
-              authButton("assets/google.png", 'Sign in with Google'),
-              SizedBox(height: 10.h),
-              authButton("assets/facebook.png", 'Sign in with Facebook'),
-              SizedBox(height: 10.h),
-              authButton("assets/apple.png", 'Sign in with Apple'),
-            ],
+                SizedBox(height: 10.h),
+                GestureDetector(
+                  onTap: () {
+                    Get.to(ForgotPassword());
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Forgot Password?",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                ElevatedButton(
+                  onPressed: () {
+                    // Login Query
+                    loginUser();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 100, vertical: 12),
+                  ),
+                  child: Text(
+                    'Login',
+                    style: GoogleFonts.ptSans(
+                      color: Colors.black,
+                      fontSize: 20.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                GestureDetector(
+                  onTap: () {
+                    Get.to(SignUpScreen());
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Hey, Are you new here?',
+                        style: GoogleFonts.ptSans(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16.sp,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'SignUp',
+                        style: GoogleFonts.ptSans(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 20.sp,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                // Auth methods
+                authButton("assets/google.png", 'Sign in with Google'),
+                SizedBox(height: 10.h),
+                authButton("assets/facebook.png", 'Sign in with Facebook'),
+                SizedBox(height: 10.h),
+                authButton("assets/apple.png", 'Sign in with Apple'),
+              ],
+            ),
           ),
         ),
       ),

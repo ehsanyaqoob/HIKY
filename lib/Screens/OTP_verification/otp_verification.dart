@@ -1,66 +1,69 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart'; // Make sure to import Get correctly
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hiky/Screens/home_page.dart';
 
 class OTPVerificationPage extends StatefulWidget {
   final String verificationId;
+  final String phoneNumber;
 
-  const OTPVerificationPage({Key? key, required this.verificationId}) : super(key: key);
+  const OTPVerificationPage({
+    Key? key,
+    required this.verificationId,
+    required this.phoneNumber,
+  }) : super(key: key);
 
   @override
   State<OTPVerificationPage> createState() => _OTPVerificationPageState();
 }
 
 class _OTPVerificationPageState extends State<OTPVerificationPage> {
-  final TextEditingController _controller1 = TextEditingController();
-  final TextEditingController _controller2 = TextEditingController();
-  final TextEditingController _controller3 = TextEditingController();
-  final TextEditingController _controller4 = TextEditingController();
-  final TextEditingController _controller5 = TextEditingController();
-  final TextEditingController _controller6 = TextEditingController();
-  final FocusNode _focusNode1 = FocusNode();
-  final FocusNode _focusNode2 = FocusNode();
-  final FocusNode _focusNode3 = FocusNode();
-  final FocusNode _focusNode4 = FocusNode();
-  final FocusNode _focusNode5 = FocusNode();
-  final FocusNode _focusNode6 = FocusNode();
+  final List<TextEditingController> _controllers =
+      List.generate(6, (_) => TextEditingController());
+
+  late List<FocusNode> _focusNodes;
+  late Timer _timer;
+  int _countDown = 180;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNodes = List.generate(6, (_) => FocusNode());
+    _startCountdownTimer();
+  }
 
   @override
   void dispose() {
-    _controller1.dispose();
-    _controller2.dispose();
-    _controller3.dispose();
-    _controller4.dispose();
-    _controller5.dispose();
-    _controller6.dispose();
-    _focusNode1.dispose();
-    _focusNode2.dispose();
-    _focusNode3.dispose();
-    _focusNode4.dispose();
-    _focusNode5.dispose();
-    _focusNode6.dispose();
+    _timer.cancel();
+    _controllers.forEach((controller) => controller.dispose());
+    _focusNodes.forEach((node) => node.dispose());
     super.dispose();
   }
 
-  // Method to handle OTP verification
-  void verifyOTP() {
-    String enteredOTP = _controller1.text + _controller2.text + _controller3.text +
-                        _controller4.text + _controller5.text + _controller6.text;
+  void _startCountdownTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_countDown > 0) {
+          _countDown--;
+        } else {
+          timer.cancel();
+          // Handle code expiration here
+        }
+      });
+    });
+  }
 
-    // Placeholder for OTP verification logic
+  void _verifyOTP() {
+    String enteredOTP =
+        _controllers.map((controller) => controller.text).join('');
+
     if (enteredOTP.length == 6) {
       Get.to(() => HomePage());
     } else {
-      _showSnackbar("Invalid OTP", "Please check the code and try again.");
-    }
-  }
-
-  // Method to focus on next or previous text field
-  void _onTextChanged(String value, FocusNode currentNode, FocusNode nextNode) {
-    if (value.isNotEmpty) {
-      FocusScope.of(context).requestFocus(nextNode);
+      // Handle incomplete OTP
     }
   }
 
@@ -75,7 +78,10 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Go Back', style: GoogleFonts.ptSans(fontSize: 20.sp, color: Colors.black)),
+        title: Text(
+          'Go Back',
+          style: GoogleFonts.ptSans(fontSize: 20.sp, color: Colors.black),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(35.0),
@@ -84,59 +90,111 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 50.h),
-            Text('Check Your Phone', style: GoogleFonts.ptSans(fontSize: 30.sp, fontWeight: FontWeight.w500, color: Colors.black), textAlign: TextAlign.center),
+            Text(
+              widget.phoneNumber,
+              style: GoogleFonts.ptSans(
+                fontSize: 30.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
             SizedBox(height: 10.h),
-            Text("We've sent the code to your phone number", style: GoogleFonts.ptSans(fontSize: 16.sp, fontWeight: FontWeight.w500, color: Colors.black), textAlign: TextAlign.center),
-            Text("+923126514491", style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            Text(
+              "We've sent the code to your phone number",
+              style: GoogleFonts.ptSans(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              widget.phoneNumber,
+              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
             SizedBox(height: 32.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(6, (index) {
                 return Expanded(
                   child: TextFormField(
-                    controller: [ _controller1, _controller2, _controller3, _controller4, _controller5, _controller6][index],
-                    focusNode: [ _focusNode1, _focusNode2, _focusNode3, _focusNode4, _focusNode5, _focusNode6][index],
+                    autofocus: index == 0,
+                    controller: _controllers[index],
+                    focusNode: _focusNodes[index],
                     keyboardType: TextInputType.number,
                     maxLength: 1,
                     textAlign: TextAlign.center,
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        if (index < 5) {
+                          FocusScope.of(context)
+                              .requestFocus(_focusNodes[index + 1]);
+                        }
+                      } else {
+                        if (index > 0) {
+                          FocusScope.of(context)
+                              .requestFocus(_focusNodes[index - 1]);
+                        }
+                      }
+                    },
                     decoration: InputDecoration(
                       hintText: '-',
                       counterText: '',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       contentPadding: EdgeInsets.all(14),
                       isDense: true,
                     ),
-                    onChanged: (value) {
-                      if (value.isNotEmpty && index < 5) {
-                        FocusScope.of(context).requestFocus([ _focusNode2, _focusNode3, _focusNode4, _focusNode5, _focusNode6][index]);
-                      }
-                    },
                   ),
                 );
               }),
             ),
             SizedBox(height: 20.h),
-            Text('Code expires in 3:00', style: GoogleFonts.ptSans(fontWeight: FontWeight.bold)),
+            Text(
+              '${(_countDown ~/ 60).toString().padLeft(2, '0')}:${(_countDown % 60).toString().padLeft(2, '0')}',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
             SizedBox(height: 40.h),
             ElevatedButton(
-              onPressed: verifyOTP,
+              onPressed: _verifyOTP,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
                 padding: EdgeInsets.symmetric(horizontal: 100, vertical: 12),
               ),
-              child: Text('Verify', style: GoogleFonts.ptSans(color: Colors.black, fontSize: 20.sp)),
+              child: Text(
+                'Verify',
+                style: GoogleFonts.ptSans(
+                  color: Colors.black,
+                  fontSize: 20.sp,
+                ),
+              ),
             ),
             SizedBox(height: 10.h),
             ElevatedButton(
-              onPressed: () => _showSnackbar("Resend OTP", "OTP has been resent successfully."),
+              onPressed: () => _showSnackbar(
+                  "Resend OTP", "OTP has been resent successfully."),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 shadowColor: Colors.grey,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30), side: BorderSide(color: Colors.grey)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  side: BorderSide(color: Colors.grey),
+                ),
                 padding: EdgeInsets.symmetric(horizontal: 100, vertical: 12),
               ),
-              child: Text('Resend', style: GoogleFonts.ptSans(color: Colors.black, fontSize: 20.sp)),
+              child: Text(
+                'Resend',
+                style: GoogleFonts.ptSans(
+                  color: Colors.black,
+                  fontSize: 20.sp,
+                ),
+              ),
             )
           ],
         ),
@@ -145,6 +203,11 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
   }
 
   void _showSnackbar(String title, String message) {
-    Get.snackbar(title, message, backgroundColor: Colors.teal, colorText: Colors.white);
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: Colors.teal,
+      colorText: Colors.white,
+    );
   }
 }

@@ -1,10 +1,13 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'OTP_verification/otp_verification.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -18,43 +21,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
 
   final String countryCode = "+1";
-  Future<void> signUpUser() async {
-    try {
-      String fullPhoneNumber = countryCode + phoneController.text;
 
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: fullPhoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          // This callback gets called when the verification is done automatically
-          _showSnackbar("Phone number automatically verified",
-              backgroundColor: Colors.teal[400]);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          if (e.code == 'invalid-phone-number') {
-            _showSnackbar("The provided phone number is not valid.");
-          } else {
-            _showSnackbar("Failed to verify phone number: ${e.message}");
-          }
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          _showSnackbar("Verification code sent to your phone",
-              backgroundColor: Colors.teal[400]);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    OTPVerificationPage(verificationId: verificationId)),
-          );
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          _showSnackbar("Verification code retrieval timeout");
-        },
-      );
-    } catch (e) {
-      _showSnackbar("Failed to sign up user: $e");
+  Future<void> submitPhoneNumber(BuildContext context) async {
+    String phoneNumber = '${phoneController.text.trim()}';
+    String name = nameController.text.trim();
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || phoneNumber.isEmpty || password.isEmpty) {
+      _showSnackbar("Please fill in all the details", backgroundColor: Colors.teal[400]);
+      return;
     }
+
+    // Concatenate the selected country code with the entered phone number
+    String fullPhoneNumber = '$countryCode$phoneNumber';
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+
+    await auth.verifyPhoneNumber(
+      phoneNumber: fullPhoneNumber,
+      verificationCompleted: (PhoneAuthCredential credential) async {},
+      verificationFailed: (FirebaseAuthException e) {
+        print(e.message.toString());
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationPage(
+              verificationId: verificationId,
+              phoneNumber: fullPhoneNumber,
+            ),
+          ),
+        );
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
   }
 
   void _showSnackbar(String message, {Color? backgroundColor}) {
@@ -65,6 +70,92 @@ class _SignUpScreenState extends State<SignUpScreen> {
       snackPosition: SnackPosition.TOP,
       colorText: Colors.white,
     );
+  }
+
+  final GoogleSignIn googleSignIn = GoogleSignIn(
+    clientId:
+        '789730785601-6qc9fcappbntblfnbvfagad3hukcom5a.apps.googleusercontent.com', // Replace with your Google Sign-In client ID
+    scopes: ['email'],
+  );
+
+  Future<void> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleSignInAccount =
+          await googleSignIn.signIn();
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuth =
+            await googleSignInAccount.authentication;
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleSignInAuth.accessToken,
+          idToken: googleSignInAuth.idToken,
+        );
+
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithCredential(credential);
+
+        if (userCredential.user != null) {
+          // Get.to(OTPVerificationPage(verificationId: verificationId, phoneNumber: phoneNumber));
+        }
+      }
+    } catch (e) {
+      print("Error signing in with Google: $e");
+    }
+  }
+
+  Future<void> signInWithFacebook() async {
+    try {
+      final LoginResult result = await FacebookAuth.instance.login();
+
+      if (result.status == LoginStatus.success) {
+        final AuthCredential credential = FacebookAuthProvider.credential(
+          result.accessToken!.token,
+        );
+
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithCredential(credential);
+
+        if (userCredential.user != null) {
+          // Get.to(OTPVerificationPage(verificationId: verificationId, phoneNumber: phoneNumber));
+        }
+      } else if (result.status == LoginStatus.cancelled) {
+        print("Facebook Sign-In Cancelled");
+      } else {
+        print("Error signing in with Facebook: ${result.message}");
+      }
+    } catch (e) {
+      print("Error signing in with Facebook: $e");
+    }
+  }
+
+  Future<void> signInWithApple() async {
+    try {
+      final AuthorizationCredentialAppleID appleCredential =
+          await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'your.client.id',
+          redirectUri: Uri.parse('https://your-redirect-uri.com'),
+        ),
+      );
+
+      final AuthCredential credential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (userCredential.user != null) {
+        // Get.to(OTPVerificationPage(verificationId: verificationId, phoneNumber: phoneNumber));
+      }
+    } catch (e) {
+      print("Error signing in with Apple: $e");
+    }
   }
 
   @override
@@ -88,7 +179,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             color: Colors.black,
           ),
         ),
-        centerTitle: true,
       ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -100,19 +190,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
             children: [
               Image.asset(
                 'assets/HIKY_DARK.png',
-                height: 200.h,
+                height: 100.h,
                 width: MediaQuery.of(context).size.width,
               ),
-              Text(
-                'Welcome Newbies',
-                style: GoogleFonts.ptSans(
-                  fontSize: 40.sp,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 10.h),
+              // Text(
+              //   'Welcome Newbies',
+              //   style: GoogleFonts.ptSans(
+              //     fontSize: 40.sp,
+              //     color: Colors.black,
+              //     fontWeight: FontWeight.bold,
+              //   ),
+              //   textAlign: TextAlign.center,
+              // ),
+              //SizedBox(height: 10.h),
               TextFormField(
                 onTapOutside: (value) {
                   FocusManager.instance.primaryFocus?.unfocus();
@@ -148,6 +238,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   prefixIcon: Icon(Icons.email, color: Colors.grey[700]),
+                  fillColor: Colors.white,
+                  filled: true,
+                ),
+              ),
+              SizedBox(height: 15.h),
+              TextFormField(
+                onTapOutside: (value) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(
+                      color: Colors.grey,
+                    ),
+                  ),
+                  prefixIcon: Icon(Icons.lock, color: Colors.grey[700]),
                   fillColor: Colors.white,
                   filled: true,
                 ),
@@ -196,9 +306,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ],
               ),
               SizedBox(height: 20.h),
+              //
               ElevatedButton(
                 onPressed: () {
-                  signUpUser();
+                  submitPhoneNumber(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
@@ -215,6 +326,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
               ),
+
+              //
               SizedBox(height: 20.h),
               authButton("assets/google.png", 'Sign up with Google'),
               SizedBox(height: 10.h),

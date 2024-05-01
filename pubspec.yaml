@@ -26,11 +26,21 @@ dependencies:
   flutter_screenutil: ^5.9.0
   # for flutter native splash 
   flutter_native_splash: ^2.4.0
+  # for onBoarding Screens
   smooth_page_indicator: ^1.1.0
+  # 
   lottie: ^3.1.0
+  # firebase auth
   firebase_auth: ^4.19.1
   firebase_core: ^2.29.0
+  # Country codes picker for phone numbers
   country_code_picker: ^3.0.0
+
+  # SignUp methods
+  google_sign_in: ^6.2.1
+  flutter_facebook_auth: ^6.2.0
+  sign_in_with_apple: ^6.1.0
+  google_nav_bar: ^5.0.6
   # 
 
 dev_dependencies:
